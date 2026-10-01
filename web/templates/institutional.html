@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}三大法人買賣超 - 台股追蹤{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🏛️ 三大法人買賣超</h1>
+    <p class="subtitle">外資、投信、自營商每日個股買賣超明細</p>
+</div>
+
+<!-- 日期選擇 -->
+<div class="toolbar">
+    <label>📅 選擇日期：</label>
+    <select onchange="onDateChange(this, '/institutional')">
+        <option value="">-- 選擇日期 --</option>
+        {% for d in dates %}
+        <option value="{{ d }}" {% if d == selected_date %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+    </select>
+    {% if selected_date %}
+    <span class="badge badge-info">{{ data|length }} 筆資料</span>
+    {% endif %}
+</div>
+
+{% if data %}
+<div class="card">
+    <div class="card-header">
+        <h3>📋 {{ selected_date }} 三大法人買賣超</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-wrapper" style="max-height:70vh; overflow-y:auto;">
+            <table id="instTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('instTable', 0, false)" style="cursor:pointer;">代號 ⇅</th>
+                        <th>名稱</th>
+                        <th class="right" onclick="sortTable('instTable', 2, true)" style="cursor:pointer;">外資買 ⇅</th>
+                        <th class="right" onclick="sortTable('instTable', 3, true)" style="cursor:pointer;">外資賣 ⇅</th>
+                        <th class="right" onclick="sortTable('instTable', 4, true)" style="cursor:pointer;">外資超 ⇅</th>
+                        <th class="right" onclick="sortTable('instTable', 5, true)" style="cursor:pointer;">投信買 ⇅</th>
+                        <th class="right" onclick="sortTable('instTable', 6, true)" style="cursor:pointer;">投信賣 ⇅</th>
+                        <th class="right" onclick="sortTable('instTable', 7, true)" style="cursor:pointer;">投信超 ⇅</th>
+                        <th class="right" onclick="sortTable('instTable', 8, true)" style="cursor:pointer;">自營買 ⇅</th>
+                        <th class="right" onclick="sortTable('instTable', 9, true)" style="cursor:pointer;">自營賣 ⇅</th>
+                        <th class="right" onclick="sortTable('instTable', 10, true)" style="cursor:pointer;">自營超 ⇅</th>
+                        <th class="right" onclick="sortTable('instTable', 11, true)" style="cursor:pointer;">合計 ⇅</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        <td>
+                            <span class="stock-badge">
+                                <a href="/stock/{{ row.stock_id }}" class="sid">{{ row.stock_id }}</a>
+                            </span>
+                        </td>
+                        <td>{{ row.stock_name or '' }}</td>
+                        <td class="right mono">{{ "{:,}".format((row.foreign_buy / 1000)|int) }}</td>
+                        <td class="right mono">{{ "{:,}".format((row.foreign_sell / 1000)|int) }}</td>
+                        <td class="right mono {{ 'up' if row.foreign_net > 0 else ('down' if row.foreign_net < 0 else '') }}" style="font-weight:600;">
+                            {{ "{:+,}".format((row.foreign_net / 1000)|int) }}
+                        </td>
+                        <td class="right mono">{{ "{:,}".format((row.trust_buy / 1000)|int) }}</td>
+                        <td class="right mono">{{ "{:,}".format((row.trust_sell / 1000)|int) }}</td>
+                        <td class="right mono {{ 'up' if row.trust_net > 0 else ('down' if row.trust_net < 0 else '') }}" style="font-weight:600;">
+                            {{ "{:+,}".format((row.trust_net / 1000)|int) }}
+                        </td>
+                        <td class="right mono">{{ "{:,}".format((row.dealer_buy / 1000)|int) }}</td>
+                        <td class="right mono">{{ "{:,}".format((row.dealer_sell / 1000)|int) }}</td>
+                        <td class="right mono {{ 'up' if row.dealer_net > 0 else ('down' if row.dealer_net < 0 else '') }}" style="font-weight:600;">
+                            {{ "{:+,}".format((row.dealer_net / 1000)|int) }}
+                        </td>
+                        <td class="right mono {{ 'up' if row.total_net > 0 else ('down' if row.total_net < 0 else '') }}" style="font-weight:700;">
+                            {{ "{:+,}".format((row.total_net / 1000)|int) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.8rem; margin-top:12px;">* 單位：張（千股）| 點擊欄位標題可排序</p>
+    </div>
+</div>
+{% elif selected_date %}
+<div class="card">
+    <div class="card-body">
+        <div class="empty-state">
+            <div class="empty-icon">🏛️</div>
+            <p>{{ selected_date }} 尚無三大法人資料</p>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <div class="empty-state">
+            <div class="empty-icon">📅</div>
+            <p>請選擇日期查詢，或先執行資料抓取</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

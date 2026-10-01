@@ -1,0 +1,37 @@
+2026-09-30 23:08:04 [INFO] database - 資料庫初始化完成
+2026-09-30 23:08:04 [INFO] DailyUpdater - =======================================================
+2026-09-30 23:08:04 [INFO] DailyUpdater - 🚀 開始執行台股盤後資料更新: 20260930
+2026-09-30 23:08:04 [INFO] DailyUpdater - =======================================================
+2026-09-30 23:08:04 [INFO] fetchers.twse_daily - 抓取上市每日行情: 20260930
+2026-09-30 23:08:04 [INFO] database - 寫入 1095 筆股票基本資料
+2026-09-30 23:08:04 [INFO] database - 寫入 1095 筆每日行情
+2026-09-30 23:08:05 [INFO] fetchers.twse_daily - 上市每日行情完成: 1095 筆
+2026-09-30 23:08:08 [INFO] fetchers.tpex_daily - 抓取上櫃每日行情: 20260930
+2026-09-30 23:08:09 [INFO] database - 寫入 888 筆股票基本資料
+2026-09-30 23:08:09 [INFO] database - 寫入 888 筆每日行情
+2026-09-30 23:08:09 [INFO] fetchers.tpex_daily - 上櫃每日行情完成 (Web API): 888 筆
+2026-09-30 23:08:12 [INFO] fetchers.twse_institutional - 抓取上市三大法人買賣超: 20260930
+2026-09-30 23:08:15 [INFO] database - 寫入 1238 筆三大法人買賣超
+2026-09-30 23:08:16 [INFO] fetchers.twse_institutional - 上市三大法人完成: 1238 筆
+2026-09-30 23:08:19 [INFO] fetchers.tpex_institutional - 抓取上櫃三大法人買賣超: 20260930
+2026-09-30 23:08:19 [INFO] fetchers.tpex_institutional - Web API 無上櫃三大法人資料，嘗試 OpenAPI
+2026-09-30 23:08:23 [INFO] database - 寫入 792 筆三大法人買賣超
+2026-09-30 23:08:23 [INFO] fetchers.tpex_institutional - 上櫃三大法人完成 (OpenAPI): 792 筆 (日期: 2026-09-30)
+2026-09-30 23:08:26 [INFO] fetchers.broker_trading - 抓取券商分點進出: 2026-09-30
+2026-09-30 23:08:26 [WARNING] fetchers.broker_trading - FinMind 帳號等級不足: Your level is register. Please update your user level. Detail information:https://finmindtrade.com/analysis/#/Sponsor/sponsor
+2026-09-30 23:08:29 [INFO] fetchers.broker_trading - 全市場查詢需要較高帳號等級，改為逐股查詢模式...
+2026-09-30 23:08:29 [INFO] fetchers.broker_trading - 開始逐股查詢券商分點，共 1983 檔股票...
+2026-09-30 23:08:38 [ERROR] fetchers.broker_trading - 連續失敗過多，停止券商分點查詢
+2026-09-30 23:08:38 [INFO] fetchers.broker_trading - 券商分點逐股查詢完成: 0 筆 (0 檔成功)
+2026-09-30 23:08:38 [INFO] DailyUpdater - =======================================================
+2026-09-30 23:08:38 [INFO] DailyUpdater - 🎉 今日更新結果統計：
+2026-09-30 23:08:38 [INFO] DailyUpdater -    上市行情         :   1095 筆 (✅ 成功)
+2026-09-30 23:08:38 [INFO] DailyUpdater -    上櫃行情         :    888 筆 (✅ 成功)
+2026-09-30 23:08:38 [INFO] DailyUpdater -    上市三大法人       :   1238 筆 (✅ 成功)
+2026-09-30 23:08:38 [INFO] DailyUpdater -    上櫃三大法人       :    792 筆 (✅ 成功)
+2026-09-30 23:08:38 [INFO] DailyUpdater -    券商分點         :      0 筆 (⚠️ 0 筆)
+2026-09-30 23:08:38 [INFO] DailyUpdater - -------------------------------------------------------
+2026-09-30 23:08:38 [INFO] DailyUpdater - 📊 資料庫現有累積總量：
+2026-09-30 23:08:38 [INFO] DailyUpdater -    股票檔數: 1,983 檔 | 最新日期: 2026-09-30
+2026-09-30 23:08:38 [INFO] DailyUpdater -    行情筆數: 3,078 筆 | 三大法人: 3,260 筆 | 券商分點: 0 筆
+2026-09-30 23:08:38 [INFO] DailyUpdater - =======================================================

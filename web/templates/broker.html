@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}券商分點進出 - 台股追蹤{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🏢 券商分點進出</h1>
+    <p class="subtitle">查詢個股的券商分點買賣明細，追蹤主力動向</p>
+</div>
+
+<!-- 搜尋工具 -->
+<div class="toolbar">
+    <form method="GET" action="/broker" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <label>📋 股票代號：</label>
+        <input type="text" name="stock_id" value="{{ stock_id }}" placeholder="例如: 2330" style="width:120px;">
+
+        <label>📅 日期：</label>
+        <select name="date">
+            <option value="">-- 全部日期 --</option>
+            {% for d in dates %}
+            <option value="{{ d }}" {% if d == selected_date %}selected{% endif %}>{{ d }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="btn btn-primary">🔍 查詢</button>
+    </form>
+</div>
+
+{% if data %}
+<div class="card">
+    <div class="card-header">
+        <h3>
+            📊 {{ stock_id }}
+            {% if data[0].stock_name %} {{ data[0].stock_name }}{% endif %}
+            {% if selected_date %} - {{ selected_date }}{% endif %}
+            券商分點
+        </h3>
+        <span class="badge badge-info">{{ data|length }} 筆</span>
+    </div>
+    <div class="card-body">
+        <div class="table-wrapper" style="max-height:70vh; overflow-y:auto;">
+            <table id="brokerTable">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th onclick="sortTable('brokerTable', 1, false)" style="cursor:pointer;">券商代號 ⇅</th>
+                        <th onclick="sortTable('brokerTable', 2, false)" style="cursor:pointer;">券商名稱 ⇅</th>
+                        <th class="right" onclick="sortTable('brokerTable', 3, true)" style="cursor:pointer;">均價 ⇅</th>
+                        <th class="right" onclick="sortTable('brokerTable', 4, true)" style="cursor:pointer;">買進 ⇅</th>
+                        <th class="right" onclick="sortTable('brokerTable', 5, true)" style="cursor:pointer;">賣出 ⇅</th>
+                        <th class="right" onclick="sortTable('brokerTable', 6, true)" style="cursor:pointer;">買賣超 ⇅</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        <td class="mono">{{ row.date }}</td>
+                        <td class="mono">{{ row.broker_id }}</td>
+                        <td>{{ row.broker_name }}</td>
+                        <td class="right mono">{{ "%.2f"|format(row.price) if row.price else '--' }}</td>
+                        <td class="right mono buy-color">{{ "{:,}".format(row.buy) }}</td>
+                        <td class="right mono sell-color">{{ "{:,}".format(row.sell) }}</td>
+                        <td class="right mono {{ 'up' if row.net > 0 else ('down' if row.net < 0 else '') }}" style="font-weight:600;">
+                            {{ "{:+,}".format(row.net) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.8rem; margin-top:12px;">* 單位：股 | 點擊欄位標題可排序</p>
+    </div>
+</div>
+{% elif stock_id %}
+<div class="card">
+    <div class="card-body">
+        <div class="empty-state">
+            <div class="empty-icon">🏢</div>
+            <p style="font-size:1.1rem; font-weight:600; margin-bottom:8px;">{{ stock_id }} {% if selected_date %}{{ selected_date }} {% endif %}尚無券商分點資料</p>
+            <div style="max-width:560px; margin:16px auto; text-align:left; background:var(--bg-secondary, rgba(255,255,255,0.03)); border:1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius:8px; padding:16px; font-size:0.9rem; line-height:1.6; color:var(--text-secondary, #a0aec0);">
+                <div style="font-weight:600; color:var(--text-primary, #e2e8f0); margin-bottom:6px;">💡 提示：券商分點資料來源說明</div>
+                <p style="margin:0 0 8px 0;">券商分點進出資料來源為 <b>FinMind API (TaiwanStockTradingDailyReport)</b>。官方規定該資料集需具備 <b>Sponsor (贊助會員)</b> 等級權限。</p>
+                <p style="margin:0;">若您已有贊助者 Token，請至 <code>config.py</code> 更新 <code>FINMIND_API_TOKEN</code>，並執行 <code>python main.py fetch</code>，系統即會全自動下載分點資料並在此呈現！</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <p style="font-size:1.1rem;">請在上方輸入股票代號（例如 2330）查詢券商分點買賣明細</p>
+            <div style="max-width:560px; margin:16px auto; text-align:left; background:var(--bg-secondary, rgba(255,255,255,0.03)); border:1px solid var(--border-color, rgba(255,255,255,0.1)); border-radius:8px; padding:16px; font-size:0.88rem; line-height:1.6; color:var(--text-secondary, #a0aec0);">
+                <div style="font-weight:600; color:var(--text-primary, #e2e8f0); margin-bottom:4px;">📌 系統已抓取之籌碼資料</div>
+                <ul style="margin:4px 0 0 16px; padding:0;">
+                    <li><b>上市 / 上櫃每日收盤行情</b>（開高低收、成交量、成交金額、漲跌幅）</li>
+                    <li><b>三大法人買賣超</b>（外資、投信、自營商買賣超金額與張數）</li>
+                    <li><b>券商分點進出</b>（需 FinMind 贊助會員 Token 啟用）</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

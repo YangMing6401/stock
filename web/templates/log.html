@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}抓取紀錄 - 台股追蹤{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📝 資料抓取紀錄</h1>
+    <p class="subtitle">查看每次資料抓取的執行狀態與結果</p>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3>📋 最近 100 筆紀錄</h3>
+    </div>
+    <div class="card-body">
+        {% if logs %}
+        <div class="table-wrapper" style="max-height:70vh; overflow-y:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>時間</th>
+                        <th>日期</th>
+                        <th>任務</th>
+                        <th>狀態</th>
+                        <th class="right">筆數</th>
+                        <th>訊息</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr>
+                        <td class="mono" style="font-size:0.85rem;">{{ log.created_at }}</td>
+                        <td class="mono">{{ log.date }}</td>
+                        <td>
+                            {% if 'daily' in log.task %}📈{% elif 'institutional' in log.task %}🏛️{% elif 'broker' in log.task %}🏢{% endif %}
+                            {{ log.task }}
+                        </td>
+                        <td>
+                            <span class="log-status {{ log.status }}">
+                                {% if log.status == 'success' %}✓ 成功{% else %}✗ 失敗{% endif %}
+                            </span>
+                        </td>
+                        <td class="right mono">{{ "{:,}".format(log.records) }}</td>
+                        <td style="color:var(--text-muted); font-size:0.85rem; max-width:300px; overflow:hidden; text-overflow:ellipsis;">
+                            {{ log.message or '' }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📝</div>
+            <p>尚無抓取紀錄</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

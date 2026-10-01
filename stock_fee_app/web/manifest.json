@@ -1,0 +1,11 @@
+{
+  "name": "台股手續費計算器",
+  "short_name": "手續費試算",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#3B82F6",
+  "description": "台股股票手續費、當沖、ETF與損益兩平計算器",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false
+}

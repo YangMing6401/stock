@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+{% block title %}{{ stock_id }} {{ stock_name }} - 台股追蹤{% endblock %}
+
+{% block content %}
+<!-- Stock Header -->
+<div class="stock-header">
+    <div>
+        <span class="stock-code">{{ stock_id }}</span>
+    </div>
+    <div>
+        <span class="stock-name">{{ stock_name }}</span>
+    </div>
+    {% if prices %}
+    <div class="stock-price">
+        {% set latest = prices[0] %}
+        <div class="price-value {{ 'up' if latest.change and latest.change > 0 else ('down' if latest.change and latest.change < 0 else 'neutral') }}">
+            {{ latest.close if latest.close else '--' }}
+        </div>
+        <div class="price-change {{ 'up' if latest.change and latest.change > 0 else ('down' if latest.change and latest.change < 0 else 'neutral') }}">
+            {% if latest.change %}
+                {{ '+' if latest.change > 0 else '' }}{{ "%.2f"|format(latest.change) }}
+            {% else %}
+                --
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Price Chart -->
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+        <h3>📈 股價走勢</h3>
+        <div>
+            <a href="/stock/{{ stock_id }}?days=20" class="btn btn-ghost" style="font-size:0.82rem;">20日</a>
+            <a href="/stock/{{ stock_id }}?days=60" class="btn btn-ghost" style="font-size:0.82rem;">60日</a>
+            <a href="/stock/{{ stock_id }}?days=120" class="btn btn-ghost" style="font-size:0.82rem;">120日</a>
+        </div>
+    </div>
+    <div class="card-body">
+        {% if prices %}
+        <div class="chart-container">
+            <canvas id="priceChart"></canvas>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📉</div>
+            <p>尚無行情資料</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid-2">
+    <!-- 三大法人買賣超圖表 -->
+    <div class="card">
+        <div class="card-header">
+            <h3>🏛️ 三大法人買賣超</h3>
+        </div>
+        <div class="card-body">
+            {% if institutional %}
+            <div class="chart-container">
+                <canvas id="institutionalChart"></canvas>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">🏛️</div>
+                <p>尚無法人資料</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 最新三大法人數據 -->
+    <div class="card">
+        <div class="card-header">
+            <h3>📋 法人買賣超明細</h3>
+        </div>
+        <div class="card-body">
+            {% if institutional %}
+            <div class="table-wrapper" style="max-height:320px; overflow-y:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th class="right">外資</th>
+                            <th class="right">投信</th>
+                            <th class="right">自營</th>
+                            <th class="right">合計</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in institutional[:20] %}
+                        <tr>
+                            <td class="mono">{{ row.date }}</td>
+                            <td class="right mono {{ 'up' if row.foreign_net > 0 else ('down' if row.foreign_net < 0 else '') }}">
+                                {{ "{:+,}".format((row.foreign_net / 1000)|int) }}
+                            </td>
+                            <td class="right mono {{ 'up' if row.trust_net > 0 else ('down' if row.trust_net < 0 else '') }}">
+                                {{ "{:+,}".format((row.trust_net / 1000)|int) }}
+                            </td>
+                            <td class="right mono {{ 'up' if row.dealer_net > 0 else ('down' if row.dealer_net < 0 else '') }}">
+                                {{ "{:+,}".format((row.dealer_net / 1000)|int) }}
+                            </td>
+                            <td class="right mono {{ 'up' if row.total_net > 0 else ('down' if row.total_net < 0 else '') }}" style="font-weight:600;">
+                                {{ "{:+,}".format((row.total_net / 1000)|int) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <p style="color:var(--text-muted); font-size:0.8rem; margin-top:8px;">* 單位：張</p>
+            {% else %}
+            <div class="empty-state">
+                <p>尚無法人資料</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- 券商分點 -->
+<div class="card" style="margin-top:20px;">
+    <div class="card-header">
+        <h3>🏢 券商分點進出</h3>
+    </div>
+    <div class="card-body">
+        {% if brokers %}
+        <div class="table-wrapper" style="max-height:500px; overflow-y:auto;">
+            <table id="brokerTable">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>券商代號</th>
+                        <th>券商名稱</th>
+                        <th class="right" onclick="sortTable('brokerTable', 3, true)" style="cursor:pointer;">均價 ⇅</th>
+                        <th class="right" onclick="sortTable('brokerTable', 4, true)" style="cursor:pointer;">買進 ⇅</th>
+                        <th class="right" onclick="sortTable('brokerTable', 5, true)" style="cursor:pointer;">賣出 ⇅</th>
+                        <th class="right" onclick="sortTable('brokerTable', 6, true)" style="cursor:pointer;">買賣超 ⇅</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in brokers %}
+                    <tr>
+                        <td class="mono">{{ row.date }}</td>
+                        <td class="mono">{{ row.broker_id }}</td>
+                        <td>{{ row.broker_name }}</td>
+                        <td class="right mono">{{ "%.2f"|format(row.price) if row.price else '--' }}</td>
+                        <td class="right mono buy-color">{{ "{:,}".format(row.buy) }}</td>
+                        <td class="right mono sell-color">{{ "{:,}".format(row.sell) }}</td>
+                        <td class="right mono {{ 'up' if row.net > 0 else ('down' if row.net < 0 else '') }}" style="font-weight:600;">
+                            {{ "{:+,}".format(row.net) }}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🏢</div>
+            <p>尚無券商分點資料</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 每日行情明細 -->
+<div class="card" style="margin-top:20px;">
+    <div class="card-header">
+        <h3>📊 每日行情明細</h3>
+    </div>
+    <div class="card-body">
+        {% if prices %}
+        <div class="table-wrapper" style="max-height:400px; overflow-y:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th class="right">開盤</th>
+                        <th class="right">最高</th>
+                        <th class="right">最低</th>
+                        <th class="right">收盤</th>
+                        <th class="right">漲跌</th>
+                        <th class="right">成交量</th>
+                        <th class="right">成交金額</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in prices %}
+                    <tr>
+                        <td class="mono">{{ row.date }}</td>
+                        <td class="right mono">{{ "%.2f"|format(row.open) if row.open else '--' }}</td>
+                        <td class="right mono">{{ "%.2f"|format(row.high) if row.high else '--' }}</td>
+                        <td class="right mono">{{ "%.2f"|format(row.low) if row.low else '--' }}</td>
+                        <td class="right mono" style="font-weight:600;">{{ "%.2f"|format(row.close) if row.close else '--' }}</td>
+                        <td class="right mono {{ 'up' if row.change and row.change > 0 else ('down' if row.change and row.change < 0 else '') }}">
+                            {% if row.change %}{{ '+' if row.change > 0 else '' }}{{ "%.2f"|format(row.change) }}{% else %}--{% endif %}
+                        </td>
+                        <td class="right mono">{{ "{:,}".format((row.volume / 1000)|int) if row.volume else '--' }} 張</td>
+                        <td class="right mono">
+                            {% if row.turnover %}
+                                {% if row.turnover >= 100000000 %}
+                                    {{ "%.1f"|format(row.turnover / 100000000) }} 億
+                                {% elif row.turnover >= 10000 %}
+                                    {{ "{:,}".format((row.turnover / 10000)|int) }} 萬
+                                {% else %}
+                                    {{ "{:,}".format(row.turnover|int) }}
+                                {% endif %}
+                            {% else %}--{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+{% if prices %}
+    createPriceChart('priceChart',
+        {{ prices|map(attribute='date')|list|tojson }},
+        {{ prices|map(attribute='close')|list|tojson }},
+        {{ prices|map(attribute='volume')|list|tojson }}
+    );
+{% endif %}
+
+{% if institutional %}
+    createInstitutionalChart('institutionalChart',
+        {{ institutional|map(attribute='date')|list|tojson }},
+        {{ institutional|map(attribute='foreign_net')|list|tojson }},
+        {{ institutional|map(attribute='trust_net')|list|tojson }},
+        {{ institutional|map(attribute='dealer_net')|list|tojson }}
+    );
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="台股數據追蹤系統 - 每日收盤行情、三大法人買賣超、券商分點進出查詢">
+    <title>{% block title %}台股數據追蹤系統{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="navbar-inner">
+                <a href="/" class="navbar-brand">
+                    <span class="logo-icon">📊</span>
+                    <span>台股追蹤</span>
+                </a>
+
+                <ul class="navbar-nav">
+                    <li><a href="/" class="{% if request.path == '/' %}active{% endif %}">🏠 總覽</a></li>
+                    <li><a href="/daily" class="{% if request.path == '/daily' %}active{% endif %}">📈 每日行情</a></li>
+                    <li><a href="/institutional" class="{% if request.path == '/institutional' %}active{% endif %}">🏛️ 三大法人</a></li>
+                    <li><a href="/broker" class="{% if request.path.startswith('/broker') %}active{% endif %}">🏢 券商分點</a></li>
+                    <li><a href="/log" class="{% if request.path == '/log' %}active{% endif %}">📝 紀錄</a></li>
+                </ul>
+
+                <div class="navbar-search">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="stock-search" placeholder="搜尋股票代號或名稱..." autocomplete="off">
+                    <div class="search-results" id="search-results"></div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="container fade-in">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>台股數據追蹤系統 &copy; 2026 | 資料來源：TWSE、TPEx、FinMind</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

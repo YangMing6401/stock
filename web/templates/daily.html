@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}每日行情 - 台股追蹤{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📈 每日收盤行情</h1>
+    <p class="subtitle">全市場上市櫃股票每日開高低收成交量詳細資料</p>
+</div>
+
+<!-- 日期選擇 -->
+<div class="toolbar">
+    <label>📅 選擇日期：</label>
+    <select onchange="onDateChange(this, '/daily')">
+        <option value="">-- 選擇日期 --</option>
+        {% for d in dates %}
+        <option value="{{ d }}" {% if d == selected_date %}selected{% endif %}>{{ d }}</option>
+        {% endfor %}
+    </select>
+    {% if selected_date %}
+    <span class="badge badge-info">{{ data|length }} 檔股票</span>
+    {% endif %}
+</div>
+
+{% if data %}
+<div class="card">
+    <div class="card-header">
+        <h3>📊 {{ selected_date }} 收盤行情</h3>
+    </div>
+    <div class="card-body">
+        <div class="table-wrapper" style="max-height:70vh; overflow-y:auto;">
+            <table id="dailyTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable('dailyTable', 0, false)" style="cursor:pointer;">代號 ⇅</th>
+                        <th>名稱</th>
+                        <th class="right" onclick="sortTable('dailyTable', 2, true)" style="cursor:pointer;">開盤 ⇅</th>
+                        <th class="right" onclick="sortTable('dailyTable', 3, true)" style="cursor:pointer;">最高 ⇅</th>
+                        <th class="right" onclick="sortTable('dailyTable', 4, true)" style="cursor:pointer;">最低 ⇅</th>
+                        <th class="right" onclick="sortTable('dailyTable', 5, true)" style="cursor:pointer;">收盤 ⇅</th>
+                        <th class="right" onclick="sortTable('dailyTable', 6, true)" style="cursor:pointer;">漲跌 ⇅</th>
+                        <th class="right" onclick="sortTable('dailyTable', 7, true)" style="cursor:pointer;">成交量(張) ⇅</th>
+                        <th class="right" onclick="sortTable('dailyTable', 8, true)" style="cursor:pointer;">成交金額 ⇅</th>
+                        <th class="right" onclick="sortTable('dailyTable', 9, true)" style="cursor:pointer;">筆數 ⇅</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        <td>
+                            <span class="stock-badge">
+                                <a href="/stock/{{ row.stock_id }}" class="sid">{{ row.stock_id }}</a>
+                            </span>
+                        </td>
+                        <td>{{ row.stock_name or '' }}</td>
+                        <td class="right mono">{{ "%.2f"|format(row.open) if row.open else '--' }}</td>
+                        <td class="right mono">{{ "%.2f"|format(row.high) if row.high else '--' }}</td>
+                        <td class="right mono">{{ "%.2f"|format(row.low) if row.low else '--' }}</td>
+                        <td class="right mono" style="font-weight:600;">{{ "%.2f"|format(row.close) if row.close else '--' }}</td>
+                        <td class="right mono {{ 'up' if row.change and row.change > 0 else ('down' if row.change and row.change < 0 else '') }}">
+                            {% if row.change %}{{ '+' if row.change > 0 else '' }}{{ "%.2f"|format(row.change) }}{% else %}--{% endif %}
+                        </td>
+                        <td class="right mono">{{ "{:,}".format((row.volume / 1000)|int) if row.volume else '--' }}</td>
+                        <td class="right mono">
+                            {% if row.turnover %}
+                                {% if row.turnover >= 100000000 %}
+                                    {{ "%.1f"|format(row.turnover / 100000000) }} 億
+                                {% elif row.turnover >= 10000 %}
+                                    {{ "{:,}".format((row.turnover / 10000)|int) }} 萬
+                                {% else %}
+                                    {{ "{:,}".format(row.turnover|int) }}
+                                {% endif %}
+                            {% else %}--{% endif %}
+                        </td>
+                        <td class="right mono">{{ "{:,}".format(row.transactions) if row.transactions else '--' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p style="color:var(--text-muted); font-size:0.8rem; margin-top:12px;">* 點擊欄位標題可排序</p>
+    </div>
+</div>
+{% elif selected_date %}
+<div class="card">
+    <div class="card-body">
+        <div class="empty-state">
+            <div class="empty-icon">📈</div>
+            <p>{{ selected_date }} 尚無行情資料</p>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <div class="card-body">
+        <div class="empty-state">
+            <div class="empty-icon">📅</div>
+            <p>請選擇日期查詢，或先執行資料抓取</p>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

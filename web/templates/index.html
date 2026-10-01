@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}台股數據追蹤系統 - 總覽{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📊 系統總覽</h1>
+    <p class="subtitle">台灣股市每日數據追蹤與分析平台</p>
+</div>
+
+<!-- 統計卡片 -->
+<div class="stats-grid">
+    <div class="stat-card blue">
+        <div class="stat-icon blue">📋</div>
+        <div class="stat-info">
+            <div class="stat-label">追蹤股票數</div>
+            <div class="stat-value">{{ "{:,}".format(stats.stocks) }}</div>
+            <div class="stat-sub">上市 + 上櫃</div>
+        </div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-icon green">📈</div>
+        <div class="stat-info">
+            <div class="stat-label">每日行情筆數</div>
+            <div class="stat-value">{{ "{:,}".format(stats.daily_price) }}</div>
+            <div class="stat-sub">累計資料量</div>
+        </div>
+    </div>
+    <div class="stat-card purple">
+        <div class="stat-icon purple">🏛️</div>
+        <div class="stat-info">
+            <div class="stat-label">三大法人紀錄</div>
+            <div class="stat-value">{{ "{:,}".format(stats.institutional_trading) }}</div>
+            <div class="stat-sub">買賣超資料</div>
+        </div>
+    </div>
+    <div class="stat-card orange">
+        <div class="stat-icon orange">🏢</div>
+        <div class="stat-info">
+            <div class="stat-label">券商分點紀錄</div>
+            <div class="stat-value">{{ "{:,}".format(stats.broker_trading) }}</div>
+            <div class="stat-sub">進出明細</div>
+        </div>
+    </div>
+    <div class="stat-card cyan">
+        <div class="stat-icon cyan">📅</div>
+        <div class="stat-info">
+            <div class="stat-label">最新資料日期</div>
+            <div class="stat-value" style="font-size:1.2rem">{{ stats.latest_date }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- 快速導航 -->
+<div class="grid-3" style="margin-top: 32px;">
+    <a href="/daily" class="card" style="text-decoration:none;">
+        <div class="card-body" style="text-align:center; padding:32px;">
+            <div style="font-size:2.5rem; margin-bottom:12px;">📈</div>
+            <h3 style="margin-bottom:8px; color:var(--text-primary);">每日行情</h3>
+            <p style="color:var(--text-secondary); font-size:0.9rem;">查看全市場每日開高低收、成交量等詳細行情資料</p>
+        </div>
+    </a>
+    <a href="/institutional" class="card" style="text-decoration:none;">
+        <div class="card-body" style="text-align:center; padding:32px;">
+            <div style="font-size:2.5rem; margin-bottom:12px;">🏛️</div>
+            <h3 style="margin-bottom:8px; color:var(--text-primary);">三大法人</h3>
+            <p style="color:var(--text-secondary); font-size:0.9rem;">外資、投信、自營商每日買賣超股數與金額排行</p>
+        </div>
+    </a>
+    <a href="/broker" class="card" style="text-decoration:none;">
+        <div class="card-body" style="text-align:center; padding:32px;">
+            <div style="font-size:2.5rem; margin-bottom:12px;">🏢</div>
+            <h3 style="margin-bottom:8px; color:var(--text-primary);">券商分點</h3>
+            <p style="color:var(--text-secondary); font-size:0.9rem;">查詢個股的券商分點進出明細，追蹤主力動向</p>
+        </div>
+    </a>
+</div>
+
+{% if dates %}
+<div class="card" style="margin-top: 24px;">
+    <div class="card-header">
+        <h3>📅 已收錄日期</h3>
+    </div>
+    <div class="card-body">
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+            {% for d in dates[:30] %}
+            <a href="/daily?date={{ d }}" class="badge badge-info" style="text-decoration:none;">{{ d }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
